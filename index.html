@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>NORMAL</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <style>
+    body,
+    html,
+    #container {
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        font-family: "微软雅黑";
+    }
+    .location{
+        position: fixed;
+        height: 150px;
+        width: 240px;
+        bottom: 20px;
+        right: 20px;
+        background-color: #fff;
+        z-index: 100;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        align-items: center;
+        
+    }
+    .text{
+        height: 40px;
+        text-overflow: ellipsis;
+    }
+    .button{
+        height: 40px;
+        width: 100px;
+        background-color: #ff6700;
+        border-radius: 5px;
+        line-height: 40px;
+        text-align: center;
+        color: #fff;
+    }
+    .button:hover{
+        box-shadow: 4px 4px 10px #b5b5b5;
+    }
+    </style>
+    
+    <script src="//api.map.baidu.com/api?type=webgl&v=1.0&ak=uE26khWBMTGrKg70KE2VSW1eooAlKKgl"></script>
+</head>
+<body>
+    <div class="location">
+        <div class="text">经纬：</div>
+        <div class="button">定位</div>
+    </div>
+    <div id="container"></div>
+</body>
+    <script>
+        
+        var map = new BMapGL.Map('container');
+        map.centerAndZoom(new BMapGL.Point(120.025, 30.298), 16);
+        map.enableScrollWheelZoom(true);
+        // 创建添加点标记
+        var marker = new BMapGL.Marker(new BMapGL.Point(120.025, 30.298));
+        map.addOverlay(marker);
+        // var newPos = new BMapGL.Marker(new BMapGL.Point((120.11657035255355-0.0892), (30.28461450329489+0.0148)));
+        // map.addOverlay(newPos);
+        // 创建图文信息窗口
+        var sContent = `<h4 style='margin:0 0 5px 0;'>信息科学与技术学院</h4>
+            <img style='float:right;margin:0 4px 22px' id='imgDemo' src='./img/logo.webp' width='139' height='104'/>
+            <p style='margin:0;line-height:1.5;font-size:13px;'>
+                本科生招生热线：0571-28869830
+                <br>
+                研究生招生热线：0571-28869838
+                
+                网站：http://hise.hznu.edu.cn
+                <br>
+                E -  Mail：xinxikexue@hznu.edu.cn
+                <br>
+                学院地址：杭州市余杭区仓前街道余杭塘路2318号   
+            </p></div>`;
+        var infoWindow = new BMapGL.InfoWindow(sContent);
+        // marker添加点击事件
+        marker.addEventListener('click', function () {
+            this.openInfoWindow(infoWindow);
+            // 图片加载完毕重绘infoWindow
+            document.getElementById('imgDemo').onload = function () {
+                infoWindow.redraw(); // 防止在网速较慢时生成的信息框高度比图片总高度小，导致图片部分被隐藏
+            };
+        });
+
+        var button = document.getElementsByClassName('button');
+        var text = document.getElementsByClassName('text');
+        let x,y;
+        button[0].addEventListener('click', ()=>{
+            if (navigator.geolocation){
+                navigator.geolocation.getCurrentPosition(showPosition);
+            }else{
+                alert("该浏览器不支持获取地理位置。");
+            }
+        });
+        
+
+        function showPosition(position){
+            //偏移量
+            x = position.coords.latitude;
+            y = position.coords.longitude;
+            text[0].innerHTML="纬度：" + x + "<br>经度 :" + y;
+            theLocation();
+        }
+        
+
+        
+        // var map = new BMap.Map('container');
+        // map.centerAndZoom(new BMap.Point(120.025, 30.298), 17);
+        // map.enableScrollWheelZoom(true);
+
+        // var marker = new BMap.Marker(ggPoint);
+        // map.addOverlay(marker)
+
+        //地图初始化
+        // var bm = new BMap.Map("container");
+        // bm.centerAndZoom(ggPoint, 15);
+        // bm.addControl(new BMap.NavigationControl());
+
+        // //添加gps marker和label
+        // var markergg = new BMap.Marker(ggPoint);
+        // bm.addOverlay(markergg); //添加GPS marker
+        // var labelgg = new BMap.Label("未转换的GPS坐标（错误）",{offset:new BMap.Size(20,-10)});
+        // markergg.setLabel(labelgg); //添加GPS label
+
+        // //坐标转换完之后的回调函数
+        // translateCallback = function (data){
+        // if(data.status === 0) {
+        //     var marker = new BMap.Marker(data.points[0]);
+        //     bm.addOverlay(marker);
+        //     var label = new BMap.Label("转换后的百度坐标（正确）",{offset:new BMap.Size(20,-10)});
+        //     marker.setLabel(label); //添加百度label
+        //     bm.setCenter(data.points[0]);
+        //     }
+        // }
+
+        // setTimeout(function(){
+        //     var convertor = new BMap.Convertor();
+        //     var pointArr = [];
+        //     pointArr.push(ggPoint);
+        //     convertor.translate(pointArr, 1, 5, translateCallback)
+        // }, 1000);
+
+        // 用经纬度设置地图中心点
+        function theLocation(){
+            if(x != "" && y != ""){
+                map.clearOverlays(); 
+                var new_point = new BMapGL.Point(y,x);
+                var marker = new BMapGL.Marker(new_point);  // 创建标注
+                map.addOverlay(marker);              // 将标注添加到地图中
+                map.panTo(new_point);      
+            }
+        }
+        // button.onclick = ()=>{
+        //     var startPos;
+        //     var element = document.getElementById("nudge")
+        //     var showNudgeBanner = ()=>{ nudge.style.display = "block" }
+        //     var hideNudgeBanner = ()=>{ nudge.style.display = "none" }
+        //     var nudgeTimeoutId = setTimeout(showNudgeBanner, 5000)
+        //     var geoSuccess = (position)=>{
+        //         hideNudgeBanner()
+        //         // 获取位置后 停止显示 banner
+        //         clearTimeout(nudgeTimeoutId)
+        //         // 显示位置
+        //         startPos = position
+        //         document.getElementById('startLat').innerHTML = startPos.coords.latitude
+        //         document.getElementById('startLon').innerHTML = startPos.coords.longitude
+        //     };
+        //     var geoError = (error)=>{
+        //         switch(error.code) {
+        //         // 用户没有接受通知
+        //         case error.TIMEOUT: showNudgeBanner(); break;
+        //     }
+        //     navigator.geolocation.getCurrentPosition(geoSuccess, geoError);
+        //     };
+        // }
+    </script>
+</html>
+
